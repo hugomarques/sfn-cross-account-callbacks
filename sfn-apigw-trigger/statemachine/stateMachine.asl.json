@@ -1,0 +1,34 @@
+{
+    "Comment": "A Retry example of the Amazon States Language using an AWS API GW Endpoint",
+    "StartAt": "invokeAPI",
+    "States": {
+        "invokeAPI": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::apigateway:invoke.waitForTaskToken",
+            "Parameters": {
+                "ApiEndpoint":"${APIEndPoint}",
+                "Method":"POST",
+                "Headers": {
+                    "Content-Type": ["application/json"]
+                },
+                "Path":"${DefaultPath}",
+                "RequestBody": {
+                    "TaskToken.$": "$$.Task.Token",
+                    "body.$": "$"
+                },
+                "AuthType":"IAM_ROLE"
+            },
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 15,
+                    "MaxAttempts": 5,
+                    "BackoffRate": 1.5
+                }
+            ],
+            "End": true
+        }
+    }
+}
